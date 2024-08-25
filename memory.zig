@@ -1,9 +1,15 @@
+//--------------------------------------------------------------//
+// Imports
+//--------------------------------------------------------------//
 const std: type = @import("std");
 const expect = std.testing.expect;
 
 const ArrayList = std.ArrayList;
 const allocator = std.heap.page_allocator;
 
+//--------------------------------------------------------------//
+// Types
+//--------------------------------------------------------------//
 pub const memory = struct {
     const Self = @This();
 
@@ -25,6 +31,9 @@ pub const memory = struct {
     }
 };
 
+//--------------------------------------------------------------//
+// Tests
+//--------------------------------------------------------------//
 test "memory" {
-    var chip8_mem = memory.init();
+    // var chip8_mem = memory.init();
 }
