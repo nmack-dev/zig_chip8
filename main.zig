@@ -3,68 +3,15 @@
 //--------------------------------------------------------------//
 const std: type = @import("std");
 const mem: type = @import("memory.zig").memory;
+const nibble = @import("nibble_utl.zig").nibble;
+const Nibble = @import("nibble_utl.zig").Nibble;
+const emulator = @import("emulator.zig").emulator;
 const expect = std.testing.expect;
 
-const raylib = @import("raylib");
-
 //--------------------------------------------------------------//
-// Types
+// Parse op codes
 //--------------------------------------------------------------//
-const Nibble = enum(u8) {
-    first = 1,
-    second = 2,
-    third = 3,
-    fourth = 4,
-};
-
-//--------------------------------------------------------------//
-// Globals
-//--------------------------------------------------------------//
-var chip8_mem = mem.init();
-
-//--------------------------------------------------------------//
-// Comptime functions
-//--------------------------------------------------------------//
-fn nibble(data: u16, nib: Nibble) u8 {
-    return (data >> (16 - (4 * nib))) & 0xF;
-}
-
-//--------------------------------------------------------------//
-// Emulation functions
-//--------------------------------------------------------------//
-fn ret() void {
-    chip8_mem.pc = chip8_mem.stack.pop();
-}
-
-fn cls() void {
-    // TODO need screen impl
-}
-
-fn jp_addr(data: u16) void {
-    chip8_mem.pc = data & 0x0FFF;
-}
-
-fn call(data: u16) void {
-    chip8_mem.stack.append(chip8_mem.pc);
-    chip8_mem.pc = data & 0x0FFF;
-}
-
-fn se_byte(data: u16) void {
-    if (chip8_mem.reg[comptime nibble(data, Nibble.second)] == (data & 0xFF)) {
-        chip8_mem.pc += 1;
-    }
-}
-
-fn sne(data: u16) void {
-    if (chip8_mem.reg[comptime nibble(data, Nibble.second)] != (data & 0xFF)) {
-        chip8_mem.pc += 1;
-    }
-}
-
-//--------------------------------------------------------------//
-// Emulator
-//--------------------------------------------------------------//
-fn decode_op_code(code: u16) void {
+fn decode_op_code(emu: *emulator, code: u16) void {
     // Calculate the first nibble
     // TODO use comptime function
     const first_nibble: u8 = comptime nibble(code, Nibble.first);
@@ -75,24 +22,24 @@ fn decode_op_code(code: u16) void {
         0x0 => {
             switch (third_nibble) {
                 0xE => {
-                    ret();
+                    emu.ret();
                 },
                 else => {
-                    cls();
+                    emu.cls();
                 },
             }
         },
         0x1 => {
-            jp_addr(code);
+            emu.jp_addr(code);
         },
         0x2 => {
-            call(code);
+            emu.call(code);
         },
         0x3 => {
-            se_byte(code);
+            emu.se_byte(code);
         },
         0x4 => {
-            sne(code);
+            emu.sne(code);
         },
         0x5 => {},
         0x6 => {},
@@ -153,6 +100,6 @@ pub fn main() void {
 //--------------------------------------------------------------//
 // Tests
 //--------------------------------------------------------------//
-test "ret" {
-    // test the function probably...
-}
+// test "instruction set" {
+//     try expect(ok: bool)
+// }
