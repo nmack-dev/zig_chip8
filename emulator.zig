@@ -13,14 +13,14 @@ const expect = std.testing.expect;
 pub const emulator = struct {
     const Self = @This();
 
-    chip8_mem: mem,
+    memory: mem,
 
     pub fn init() Self {
-        return Self{.chip8_mem.init()};
+        return Self{.memory.init()};
     }
 
     pub fn ret() void {
-        .chip8_mem.pc = .chip8_mem.stack.pop();
+        .memory.pc = .memory.stack.pop();
     }
 
     pub fn cls() void {
@@ -28,29 +28,39 @@ pub const emulator = struct {
     }
 
     pub fn jp_addr(data: u16) void {
-        .chip8_mem.pc = data & 0x0FFF;
+        .memory.pc = data & 0x0FFF;
     }
 
     pub fn call(data: u16) void {
-        .chip8_mem.stack.append(.chip8_mem.pc);
-        .chip8_mem.pc = data & 0x0FFF;
+        .memory.stack.append(.memory.pc);
+        .memory.pc = data & 0x0FFF;
     }
 
     pub fn se_byte(data: u16) void {
-        if (.chip8_mem.reg[comptime nibble(data, Nibble.second)] == (data & 0xFF)) {
-            .chip8_mem.pc += 1;
+        if (.memory.reg[comptime nibble(data, Nibble.second)] == (data & 0xFF)) {
+            .memory.pc += 1;
         }
     }
 
     pub fn sne(data: u16) void {
-        if (.chip8_mem.reg[comptime nibble(data, Nibble.second)] != (data & 0xFF)) {
-            .chip8_mem.pc += 1;
+        if (.memory.reg[comptime nibble(data, Nibble.second)] != (data & 0xFF)) {
+            .memory.pc += 1;
         }
     }
 
     pub fn se_reg(data: u16) void {
-        if (.chip8_mem.reg[comptime nibble(data, 2)] == .chip8_mem.reg[comptime nibble(data, 3)]) {
-            .chip8_mem.pc += 1;
+        if (.memory.reg[comptime nibble(data, 2)] == .memory.reg[comptime nibble(data, 3)]) {
+            .memory.pc += 1;
         }
     }
 };
+
+// TODO make me work
+// test "emulator" {
+//     var emu: emulator = emulator{.memory = .{.}};
+//     emu.init();
+
+//     emu.jp_addr(0xAAAA);
+//     try expect(emu.memory.pc == 0x0AAA);
+//     emu.init();
+// }
